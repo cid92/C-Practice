@@ -9,8 +9,8 @@ typedef struct Packet {
     uint16_t length;
     uint8_t time_live;
     uint8_t protocol;
-    uint32_t source_addr;
-    uint32_t dest_addr;
+    char *source_addr; // should be 32bits
+    char *dest_addr; // should be 32bits
     char *data[64];
 } Packet;
 
@@ -30,10 +30,9 @@ uint16_t decode16 (char *array){
 
 //Function to decode 32 bits
 char* decode32 (char *array){ // should be uint32_t
-    char temp[5] = {0};
+    static char temp[5] = {0}; //static to retain memory when returning
     for (int i=0;i<BIT_32;i++){
         temp[i] = *array;
-        printf("%c",temp[i]);
         array++;
     }
     /* Will be using this if the data not sent converted to char 
@@ -45,10 +44,10 @@ char* decode32 (char *array){ // should be uint32_t
 
     }
     */
-   return 0;
+   return temp;
 }
 
-// Decode pack as receive 
+// Decode a pack as receive 
 void decodeData(char *data){
       printf("Receive pack: %s\n",data);
       receive.length = decode16 (data); // I would use pointer for the length 
@@ -58,20 +57,17 @@ void decodeData(char *data){
       data++;
       receive.protocol = *data;
       data++;
-      printf("Source address: ");
-      //receive.source_addr = decode32(data); 
-      decode32(data);
+      receive.source_addr = decode32(data); 
+      printf("Source address: %s\n",receive.source_addr);
       data+=4;
-      printf("\nDestination address: ");
-      //receive.dest_addr = decode32 (data);
-      decode32(data);
+      receive.dest_addr = decode32 (data);
+      printf("Destination address: %s\n",receive.dest_addr);
       data+=4;
       for (int i = 0; i< receive.length; i++){ 
-        printf("\nPrint Data %d: ",i);
-        //receive.data[i] = decode32 (data);
-        decode32 (data);
+        receive.data[i] = decode32(data);
+        //decode32 (data);
         data+=4;
-        //printf("\n String is %s", receive.data[i]);
+        printf("Data (32bits) %d: %s\n", i, receive.data[i]);
       }
 
 }
